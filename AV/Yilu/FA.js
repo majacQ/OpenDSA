@@ -2149,11 +2149,11 @@ var lambda = String.fromCharCode(955),
   };
 
 
-  var getNodeWithValue = function (jsav, value) {
-    var nodes = jsav.nodes();
-    for (var next = nodes.next(); next; next = nodes.next()) {
-      if (next.value() === value) {
-        return next;
+  var getNodeWithValue = function (graph, value) {
+    var nodes = graph.nodes();
+    for (var node = nodes.next(); node; node = nodes.next()) {
+      if (node.value() === value) {
+        return node;
       }
     }
   };
@@ -2258,7 +2258,7 @@ var lambda = String.fromCharCode(955),
     var list = [];
     list.push(g.initial)
     lambda = FiniteAutomaton.getTransition(g, list, 'b');
-    console.log(lambda);
+    //console.log(lambda);
     /*
     var startInd = g.nodes().indexOf(g.initial);
     while (true){
@@ -2284,6 +2284,152 @@ var lambda = String.fromCharCode(955),
     minized = this.complement(jsav, minized, {left: 10, top:0, height: 450, width: 750});
     minized.layout();
     return minized;
+  };
+
+  /*
+    Get edge outgoing edge from the node
+  */
+  FiniteAutomaton.edgeFrom = function(node){
+    return  node.container._edges[node.container._nodes.indexOf(node)];
+  };
+
+  FiniteAutomaton.findAlphabet = function(graph){
+    var alp =  graph.alphabet;
+    var alphabet = [];
+    for (const key in alp) {
+      alphabet.push(key);
+    }
+    alphabet.sort();
+    return alphabet;
+  };
+
+  FiniteAutomaton.intersectionFromTable = function(graph, graph1, graph2, table1, table2, alphabet){
+    var nodes = [];
+    var toNodes = [];
+    //var unitsize = graph.
+    let counter = 0;
+    for (var i in table1){
+
+      //var leftNodeName = getNodeWithValue(graph1, )
+      var leftNodeName = graph1.nodes()[i].options['value'];
+      //console.log(leftNodeName.options['value']);
+      for (var j in table2){
+        var rightNodeName = graph2.nodes()[j].options['value'];
+        //nodes.push('(' + leftNodeName + ',' + rightNodeName + ')');
+        var fromNodeName = '(' + leftNodeName + ',' + rightNodeName + ')';
+
+        var added = graph.addNode({ value: fromNodeName });
+        if (table1[i]['initial'] && table2[j]['initial']){
+          graph.makeInitial(added);
+        }
+
+        if (table1[i]['final'] && table2[j]['final']){
+          graph.makeFinal(added);
+        }
+        nodes[counter] = fromNodeName;
+        toNodes[counter] = {};
+
+        for (var k in alphabet){
+          //console.log(table1[i][alphabet[k]]);
+          //console.log(i + ': '+alphabet[k] + ': ' + table1[i][alphabet[k]]);
+          var toLeftNodeInd = table1[i][alphabet[k]];
+          var toRightNodeInd = table2[j][alphabet[k]];
+          var toLeftNodeName = graph1.nodes()[toLeftNodeInd].options['value'];
+          var toRightNodeName = graph2.nodes()[toRightNodeInd].options['value'];
+
+          var toNodeName = '(' + toLeftNodeName + ',' + toRightNodeName + ')';
+          toNodes[counter][alphabet[k]] = toNodeName;
+        }
+
+        counter += 1;
+        //console.log(fromNodeName);
+
+        //console.log(rightNodeName);
+        //var rightInd = table2[i];
+        //nodes.push("(q"+ leftInd + ",")
+      }
+    }
+    //console.log(nodes);
+    //console.log(toNodes)
+    for (var oneName in toNodes){
+      var fromNodeName = nodes[oneName];
+      for (var oneEdge in  alphabet){
+        var edgeweight = alphabet[oneEdge];
+        var toNodeName = toNodes[oneName][edgeweight];
+        var fromNode = getNodeWithValue(graph, fromNodeName);
+        var toNode = getNodeWithValue(graph, toNodeName);
+        graph.addEdge(fromNode, toNode, { weight: edgeweight });
+        //console.log(fromNode);
+        //console.log(toNode);
+      }
+    }
+    graph.layout();
+  };
+
+  FiniteAutomaton.findTable = function(jsav, graph){
+    var table = [];
+    var alp =  graph.alphabet;
+    var alphabet = [];
+    for (const key in alp) {
+      alphabet.push(key);
+    }
+    alphabet.sort();
+    //console.log(alphabet);
+
+    
+
+    var nodes = graph.nodes();
+    for (var node = nodes.next(); node; node = nodes.next()){
+      //console.log(node.container._nodes.indexOf(node));
+      //var newLabel = alphabet.toString().replace(',', '<br>');
+      var edgesFromNode = node.container._edges[node.container._nodes.indexOf(node)];
+      /*
+      console.log(node.options["value"]);
+      var nodeFromValue = getNodeWithValue(graph, node.options["value"]);
+      
+      if (node == nodeFromValue){
+        console.log("gotcha");
+      }
+      */
+      var startNodeValue = node.options["value"];
+      var index = node.container._nodes.indexOf(node);
+      
+      table[index] = {};
+
+      //console.log(startNodeValue);
+      for (edge in edgesFromNode){
+        //console.log(edgesFromNode[edge]);
+        var oneEdge = edgesFromNode[edge];
+        //console.log(oneEdge.endnode);
+        var endNode = oneEdge.endnode;
+        var label = oneEdge._weight;
+        var labels = label.split("<br>");
+        for(i in labels){
+          var endNodeValue = endNode.options["value"];
+
+          //console.log(startNodeValue + ', ' +  labels[i] +', '+ endNodeValue);
+          table[index][labels[i]] = endNode.container._nodes.indexOf(endNode);
+        }
+        table[index]['initial'] = false;
+        table[index]['final'] = false;
+
+      }
+    }
+    //console.log(table);
+    //matrix = jsav.ds.matrix(table, { rows:3, columns: 3, style: "matrix"});
+    //console.log(table);
+    var initial = graph.initial;
+    var initialInd = initial.container._nodes.indexOf(initial);
+    table[initialInd]['initial'] = true;
+
+    var finals = graph.getFinals();
+    for (find in finals){
+      //console.log(finals[find]);
+      var finalInd = finals[find].container._nodes.indexOf(finals[find]);
+      table[finalInd]['final'] = true;
+    }
+    //console.log(table);
+    return table;
   };
 
 
