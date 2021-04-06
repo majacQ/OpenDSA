@@ -522,6 +522,7 @@ var exerciseLocation;
   var randomLayout = function() {
     removeModeClasses();
     removeND();
+    g.randomLayoutAlg();
   };
   // Triggered by clicking the "Circle" button.
   var circleLayout = function() {
@@ -534,7 +535,7 @@ var exerciseLocation;
   var gemLayout = function() {
     removeModeClasses();
     removeND();
-    g.layout();
+    g.gemLayoutAlg();
   };
 
   // Triggered by clicking the "Spiral" button.
