@@ -1,0 +1,23 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:hoek:20180212':
+    - phantomjs > request > hawk > hoek:
+        patched: '2021-04-23T02:29:44.801Z'
+    - phantomjs > request > hawk > boom > hoek:
+        patched: '2021-04-23T02:29:44.801Z'
+    - phantomjs > request > hawk > sntp > hoek:
+        patched: '2021-04-23T02:29:44.801Z'
+    - phantomjs > request > hawk > cryptiles > boom > hoek:
+        patched: '2021-04-23T02:29:44.801Z'
+  'npm:request:20160119':
+    - phantomjs > request:
+        patched: '2021-04-23T02:29:44.801Z'
+  'npm:tough-cookie:20170905':
+    - phantomjs > request > tough-cookie:
+        patched: '2021-04-23T02:29:44.801Z'
+  'npm:tunnel-agent:20170305':
+    - phantomjs > request > tunnel-agent:
+        patched: '2021-04-23T02:29:44.801Z'
