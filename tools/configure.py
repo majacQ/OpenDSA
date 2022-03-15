@@ -95,7 +95,7 @@ def read_conf_file(config_file_path):
         print_err("INFO: course will be created for the first time")
         return False
 
-    # Try to read the configurat    ion file data as JSON
+    # Try to read the configuration file data as JSON
     try:
         with open(config_file_path) as config:
             # Force python to maintain original order of JSON objects (or else the chapters and modules will appear out of order)
@@ -171,7 +171,7 @@ def process_module(config, index_rst, mod_path, mod_attrib={'exercises': {}}, de
     global module_chap_map
     global num_ref_map
     global cmap_map
-
+    
     # Parse the name of the module from mod_path and remove the file extension
     # if it exists
     mod_name = os.path.splitext(os.path.basename(mod_path))[0]
@@ -239,7 +239,7 @@ def generate_index_rst(config, slides=False, standalone_modules=False):
 
     # Generate the index.rst file
     with codecs.open(config.book_src_dir + 'index.rst', 'w+', "utf-8") as index_rst:
-        index_rst.write(config_templates.index_header.format(config.start_chap_num))
+        index_rst.write(config_templates.index_header.format(config.start_chap_num, config.chapter_name))
         if slides:
             # implicit hyperlink from '.. _%(mod_name)s:' creates a critical error when building slides
             config_templates.rst_header = config_templates.rst_header.replace('.. _%(mod_name)s:', '.. removed from slides: .. _%(mod_name)s:')
@@ -347,6 +347,15 @@ def initialize_conf_py_options(config, slides):
     options['book_name'] = config.book_name
     options['theme_dir'] = config.theme_dir
     options['theme'] = config.theme
+    options['html_theme_options'] = "'{}'"
+    if config.html_theme_options:
+      options['html_theme_options'] = "'" + json.dumps(config.html_theme_options).replace("'", "\\'") + "'"
+    options['html_css_files'] = ""
+    if config.html_css_files:
+      options['html_css_files'] = ", '" + "', '".join(config.html_css_files) + "'"
+    options['html_js_files'] = ""
+    if config.html_js_files:
+      options['html_js_files'] = ", '" + "', '".join(config.html_js_files) + "'"
     options['odsa_dir'] = config.odsa_dir
     options['book_dir'] = config.book_dir
     options['code_dir'] = config.code_dir
@@ -386,6 +395,19 @@ def initialize_conf_py_options(config, slides):
 
     # makes sure the ebook uses the same python exec as this script
     options['python_executable'] = sys.executable
+
+    if config.include_tree_view:
+        if options['html_js_files'] != "":
+            options['html_js_files'] = options['html_js_files'] + ", '" + options['eb2root']+"lib/accessibility.js" + "'"
+        else:
+            options['html_js_files'] = ",'" + options['eb2root'] + "lib/accessibility.js" + "'"
+        if options['html_css_files'] != "":
+            options['html_css_files'] = options['html_css_files'] + ", '" + options['eb2root']+"lib/accessibility.css" + "'"
+        else:
+            options['html_css_files'] = ",'" + options['eb2root']+"lib/accessibility.css" + "'"
+
+    # Sets the value to be used to indicate book sections.
+    options['chapnum'] = config.chapter_name
 
     return options
 

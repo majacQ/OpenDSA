@@ -31,7 +31,7 @@ optional_fields = ['assumes', 'av_origin', 'av_root_dir', 'build_cmap', 'build_d
 'suppress_todo', 'tabbed_codeinc', 'theme', 'theme_dir', 'dispModComp', 'tag', 'local_mode', 'title', 'desc', 'av_origin',
 'av_root_dir', 'code_lang', 'course_id', 'LMS_url', 'module_map', 'inst_book_id','module_position','inst_exercise_id',
 'inst_chapter_id','options','inst_module_id','id', 'total_points', 'last_compiled', 'narration_enabled', 'zeropt_assignments',
-'sphinx_debug']
+'sphinx_debug', 'html_theme_options', 'html_css_files', 'html_js_files', 'include_tree_view', 'chapter_name']
 
 
 listed_modules = []
@@ -141,7 +141,7 @@ def validate_module(mod_name, module, conf_data):
     optional_fields = ['codeinclude', 'dispModComp', 'long_name', 'mod_options', 'sections', 'exercises',
                         'lms_module_item_id', 'lms_section_item_id','inst_book_id','module_position','inst_exercise_id',
                         'inst_chapter_id','options','inst_module_id','id', 'total_points', 'lms_assignment_id',
-                        'git_hash', 'zeropt_assignments']
+                        'git_hash', 'zeropt_assignments', 'due_dates']
 
     # Get module name
     get_mod_name(mod_name)
@@ -302,6 +302,9 @@ def set_defaults(conf_data):
     if 'suppress_todo' not in conf_data:
         conf_data['suppress_todo'] = False
 
+    if 'include_tree_view' not in conf_data:
+        conf_data['include_tree_view'] = False
+
     # Require slideshows to be fully completed for credit by default
     if 'req_full_ss' not in conf_data:
         conf_data['req_full_ss'] = True
@@ -311,7 +314,7 @@ def set_defaults(conf_data):
 
     if 'theme_dir' not in conf_data:
         conf_data['theme_dir'] = '%sRST/_themes' % odsa_dir
-        
+
     if 'narration_enabled' not in conf_data:
         conf_data['narration_enabled'] = True
 
@@ -336,6 +339,12 @@ def set_defaults(conf_data):
 
     if 'sphinx_debug' not in conf_data:
         conf_data['sphinx_debug'] = False
+
+    #if 'due_dates' not in conf_data:
+    #    conf_data['due_dates'] = None
+
+    if 'chapter_name' not in conf_data:
+        conf_data['chapter_name'] = "Chapter"
 
 def group_exercises(conf_data, no_lms):
     """group all exercises of one module in exercises attribute"""
@@ -366,12 +375,21 @@ def group_exercises(conf_data, no_lms):
                               conf_data['chapters'][chapter][module]['exercises'][attr] = exercise_obj
                     if 'learning_tool' in list(section_obj.keys()):
                         exercise_obj = {}
-                        exercise_obj['long_name'] = section
+                        if 'long_name' in section_obj:
+                          exercise_obj['long_name'] = section_obj['long_name']
+                        else:
+                          exercise_obj['long_name'] = section
+                        if 'enable_scrolling' in section_obj:
+                          exercise_obj['enable_scrolling'] = section_obj['enable_scrolling']
+                        if 'frame_width' in section_obj:
+                          exercise_obj['frame_width'] = section_obj['frame_width']
+                        if 'frame_height' in section_obj:
+                          exercise_obj['frame_height'] = section_obj['frame_height']
                         exercise_obj['learning_tool'] = section_obj['learning_tool']
                         if 'launch_url' in section_obj:
                             exercise_obj['launch_url'] = section_obj['launch_url']
                             exercise_obj['id'] = section_obj['id']
-                        conf_data['chapters'][chapter][module]['exercises'][section] = exercise_obj
+                        conf_data['chapters'][chapter][module]['exercises'][exercise_obj['long_name']] = exercise_obj
 
 def get_translated_text(lang_):
     """ Loads appropriate text from language_msg.json file based on book language  """

@@ -30,7 +30,7 @@ rst_header_unicode = '''\
 index_header = '''\
 .. This file is part of the OpenDSA eTextbook project. See
 .. http://opendsa.org for more details.
-.. Copyright (c) 2012-2016 by the OpenDSA Project Contributors, and
+.. Copyright (c) 2021 by the OpenDSA Project Contributors, and
 .. distributed under an MIT open source license.
 
 .. OpenDSA documentation master file, created by
@@ -44,7 +44,7 @@ index_header = '''\
 
 .. chapnum::
    :start: {0}
-   :prefix: Chapter
+   :prefix: {1}
 
 '''
 
@@ -129,6 +129,7 @@ conf = '''\
 # serve to show the default.
 
 import sys, os
+import json
 
 #checking if we are building a book or class notes (slides)
 on_slides = os.environ.get('SLIDES', None) == "yes"
@@ -178,7 +179,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'OpenDSA'
-copyright = u'2016 by OpenDSA Project Contributors and distributed under an MIT license'
+copyright = u'2021 by OpenDSA Project Contributors and distributed under an MIT license'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -269,7 +270,7 @@ else:
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = json.loads(%(html_theme_options)s)
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -307,13 +308,14 @@ html_static_path = ['_static']
 # 'odsa_root_path' specifies the relative path from the HTML output directory to the ODSA root directory and is used
 # to properly link to Privacy.html
 # The code that appends these scripts can be found in RST/_themes/haiku/layout.html and basic/layout.html
+
 html_context = {"script_files": [
                   #'https://code.jquery.com/jquery-2.1.4.min.js',
                   '%(eb2root)slib/jquery.min.js',
                   '%(eb2root)slib/jquery.migrate.min.js',
-                  '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
-                  '//cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js',
-                  '%(eb2root)slib/accessibility.js',
+                  'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+                  'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js'
+                  %(html_js_files)s
                 ],
                 "search_scripts": [
                   '_static/underscore.js',
@@ -340,8 +342,8 @@ html_context = {"script_files": [
                   '%(eb2root)slib/odsaMOD-min.css',
                   '%(eb2root)slib/jquery.ui.min.css',
                   #'https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css',
-                  '%(eb2root)slib/odsaStyle-min.css',
-                  '%(eb2root)slib/accessibility.css'
+                  '%(eb2root)slib/odsaStyle-min.css'
+                   %(html_css_files)s                  
                 ],
                 "odsa_root_path": "%(eb2root)s",
                 %(text_translated)s}
@@ -350,6 +352,8 @@ if on_slides:
    html_context["css_files"].append('%(eb2root)slib/ODSAcoursenotes.css');
    html_context["odsa_scripts"].append('%(eb2root)slib/ODSAcoursenotes.js');
 
+if '%(theme)s' != 'haiku':
+  html_context['script_files'] += html_context['odsa_scripts']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
